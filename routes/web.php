@@ -2,13 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\ClientController;
 
 Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+// ЭТУ СТРОКУ ПЕРЕМЕСТИЛИ СЮДА (ДО ГРУППЫ auth)
+require __DIR__.'/settings.php';
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::resource('clients', ClientController::class);  // ← раскомментировать
 });
-
-require __DIR__.'/settings.php';

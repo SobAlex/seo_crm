@@ -58,12 +58,12 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { router } from '@inertiajs/vue3'
-import { index, edit } from '@/routes/clients'
 import { destroy } from '@/actions/App/Http/Controllers/ClientController'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
+import { index, edit } from '@/routes/clients'
 
 const props = defineProps({
     client: Object
@@ -81,7 +81,10 @@ const deleteClient = () => {
 }
 
 const formatDate = (date) => {
-    if (!date) return '—'
+    if (!date) {
+return '—'
+}
+
     return new Date(date).toLocaleString('ru-RU')
 }
 </script>

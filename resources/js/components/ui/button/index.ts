@@ -16,6 +16,7 @@ export const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         store: "text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md",
+        update: "text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-md",
         delete: "text-red-600 hover:text-red-900 hover:bg-indigo-50 rounded-md",
       },
       size: {

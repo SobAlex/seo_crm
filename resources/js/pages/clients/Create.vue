@@ -73,16 +73,16 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { router } from '@inertiajs/vue3'
-import { store } from '@/actions/App/Http/Controllers/ClientController'
-import { index } from '@/routes/clients'
 import { reactive, ref } from 'vue'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import TextLink from '@/components/TextLink.vue'
-import { Label } from '@/components/ui/label'
+import { store } from '@/actions/App/Http/Controllers/ClientController'
 import InputError from '@/components/InputError.vue'
+import TextLink from '@/components/TextLink.vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { index } from '@/routes/clients'
 
 const form = reactive({
     title: '',

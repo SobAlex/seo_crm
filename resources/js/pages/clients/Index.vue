@@ -45,9 +45,9 @@
     </div>
 </template>
 
-<script setup>
-import { create, show } from '@/routes/clients'
+<script setup lang="ts">
 import TextLink from "@/components/TextLink.vue"
+import { create, show } from '@/routes/clients'
 
 defineProps({
     clients: Object

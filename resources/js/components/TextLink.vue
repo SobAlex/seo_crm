@@ -2,8 +2,8 @@
 import type { LinkComponentBaseProps, Method } from '@inertiajs/core';
 import { Link } from '@inertiajs/vue3';
 import { cva } from "class-variance-authority";
-import { cn } from "@/lib/utils";
 import { Pencil, Eye, ArrowBigLeft, Plus } from 'lucide-vue-next';
+import { cn } from "@/lib/utils";
 
 type Props = {
     href: LinkComponentBaseProps['href'];
@@ -41,11 +41,26 @@ const linkVariants = cva(
 );
 
 const getIcon = () => {
-    if (!props.showIcon) return null;
-    if (props.variant === 'create') return Plus;
-    if (props.variant === 'edit') return Pencil;
-    if (props.variant === 'show') return Eye;
-    if (props.variant === 'escape') return ArrowBigLeft;
+    if (!props.showIcon) {
+return null;
+}
+
+    if (props.variant === 'create') {
+return Plus;
+}
+
+    if (props.variant === 'edit') {
+return Pencil;
+}
+
+    if (props.variant === 'show') {
+return Eye;
+}
+
+    if (props.variant === 'escape') {
+return ArrowBigLeft;
+}
+
     return null;
 };
 

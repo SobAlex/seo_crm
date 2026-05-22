@@ -5,7 +5,7 @@ import type { ButtonVariants } from "."
 import { Primitive } from "reka-ui"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "."
-import { Trash2, Plus } from 'lucide-vue-next'
+import { Trash2, Plus, RefreshCcw } from 'lucide-vue-next'
 
 interface Props extends PrimitiveProps {
   variant?: ButtonVariants["variant"]
@@ -23,6 +23,7 @@ const getIcon = () => {
   if (!props.showIcon) return null
   if (props.variant === 'delete') return Trash2
   if (props.variant === 'store') return Plus
+  if (props.variant === 'update') return RefreshCcw
   return null
 }
 

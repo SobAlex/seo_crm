@@ -42,24 +42,24 @@ const linkVariants = cva(
 
 const getIcon = () => {
     if (!props.showIcon) {
-return null;
-}
+        return null;
+    }
 
     if (props.variant === 'create') {
-return Plus;
-}
+        return Plus;
+    }
 
     if (props.variant === 'edit') {
-return Pencil;
-}
+        return Pencil;
+    }
 
     if (props.variant === 'show') {
-return Eye;
-}
+        return Eye;
+    }
 
     if (props.variant === 'escape') {
-return ArrowBigLeft;
-}
+        return ArrowBigLeft;
+    }
 
     return null;
 };

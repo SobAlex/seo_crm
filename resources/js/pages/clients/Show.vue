@@ -14,7 +14,7 @@
                                 Редактировать
                             </TextLink>
 
-                            <Button variant="delete" size="lg" @click="deleteClient">
+                            <Button variant="delete" :showIcon="true" size="lg" @click="deleteClient">
                                 Удалить
                             </Button>
                         </div>
@@ -60,9 +60,11 @@
 
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3'
+
 import { destroy } from '@/actions/App/Http/Controllers/ClientController'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
+
 import { index, edit } from '@/routes/clients'
 
 const props = defineProps({

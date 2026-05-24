@@ -59,6 +59,7 @@
                             <Button
                                 type="submit"
                                 variant="update"
+                                :showIcon="true"
                                 size="lg"
                                 :disabled="processing"
                             >
@@ -75,12 +76,15 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3'
 import { reactive, ref } from 'vue'
+
 import { update } from '@/actions/App/Http/Controllers/ClientController'
 import InputError from '@/components/InputError.vue'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
 import { index, show } from '@/routes/clients'
 
 const props = defineProps({

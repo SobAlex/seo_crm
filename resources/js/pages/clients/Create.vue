@@ -61,6 +61,7 @@
                                 type="submit"
                                 variant="store"
                                 size="lg"
+                                :showIcon="true"
                                 :disabled="processing"
                             >
                                 {{ processing ? 'Сохранение...' : 'Создать' }}
@@ -76,12 +77,15 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3'
 import { reactive, ref } from 'vue'
+
 import { store } from '@/actions/App/Http/Controllers/ClientController'
 import InputError from '@/components/InputError.vue'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
 import { index } from '@/routes/clients'
 
 const form = reactive({
@@ -99,7 +103,7 @@ const submit = () => {
     const { url, method } = store()
 
     router[method](url, form, {
-        preserveState: true,  // ← важно! сохраняет введенные значения
+        preserveState: true,
         onFinish: () => {
             processing.value = false
         },

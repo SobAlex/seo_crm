@@ -11,7 +11,7 @@ class ClientController extends Controller
     public function index()
     {
         return Inertia::render('clients/Index', [
-            'clients' => Client::latest()->paginate(10)
+            'clients' => Client::latest()->paginate(10),
         ]);
     }
 
@@ -38,14 +38,14 @@ class ClientController extends Controller
     public function show(Client $client)
     {
         return Inertia::render('clients/Show', [
-            'client' => $client
+            'client' => $client,
         ]);
     }
 
     public function edit(Client $client)
     {
         return Inertia::render('clients/Edit', [
-            'client' => $client
+            'client' => $client,
         ]);
     }
 
@@ -53,7 +53,7 @@ class ClientController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:clients,email,' . $client->id,
+            'email' => 'nullable|email|unique:clients,email,'.$client->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
         ]);

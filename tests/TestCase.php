@@ -1,12 +1,15 @@
 <?php
 
 namespace Tests;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Laravel\Fortify\Features;
 
 abstract class TestCase extends BaseTestCase
 {
+    use RefreshDatabase;
+
     protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void
     {
         if (! Features::enabled($feature)) {

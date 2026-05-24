@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\WebsiteTypeController;
+use App\Http\Controllers\BusinessProcessController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -16,4 +17,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
     Route::resource('clients', ClientController::class);
     Route::resource('website-types', WebsiteTypeController::class);
+    Route::resource('business-processes', BusinessProcessController::class);
 });

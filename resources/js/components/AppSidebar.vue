@@ -19,6 +19,7 @@ import {
 import { dashboard } from '@/routes';
 import clients from '@/routes/clients';
 import websiteTypes from '@/routes/website-types';
+import businessProcesses from '@/routes/business-processes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -37,6 +38,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Типы сайтов',
         href: websiteTypes.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Бизнес-процессы',
+        href: businessProcesses.index(),
         icon: LayoutGrid,
     },
 ];

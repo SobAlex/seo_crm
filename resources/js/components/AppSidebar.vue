@@ -18,6 +18,7 @@ import {
 
 import { dashboard } from '@/routes';
 import clients from '@/routes/clients';
+import websiteTypes from '@/routes/website-types';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -31,7 +32,13 @@ const mainNavItems: NavItem[] = [
         title: 'Клиенты',
         href: clients.index().url,
         icon: Users,
-    }
+    },
+
+    {
+        title: 'Типы сайтов',
+        href: websiteTypes.index(),
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

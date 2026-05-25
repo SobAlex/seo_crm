@@ -24,6 +24,7 @@ import processStatuses from '@/routes/process-statuses';
 import projects from '@/routes/projects';
 import websites from '@/routes/websites';
 import keywords from '@/routes/keywords';
+import tracks from '@/routes/tracks';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -72,6 +73,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Ключевые слова',
         href: keywords.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Треки',
+        href: tracks.index(),
         icon: LayoutGrid,
     },
 ];

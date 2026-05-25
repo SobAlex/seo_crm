@@ -20,6 +20,7 @@ import { dashboard } from '@/routes';
 import clients from '@/routes/clients';
 import websiteTypes from '@/routes/website-types';
 import businessProcesses from '@/routes/business-processes';
+import processStatuses from '@/routes/process-statuses';
 import projects from '@/routes/projects';
 import type { NavItem } from '@/types';
 
@@ -51,6 +52,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Проекты',
         href: projects.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Статусы процессов',
+        href: processStatuses.index(),
         icon: LayoutGrid,
     },
 ];

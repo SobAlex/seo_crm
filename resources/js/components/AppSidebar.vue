@@ -22,6 +22,7 @@ import websiteTypes from '@/routes/website-types';
 import businessProcesses from '@/routes/business-processes';
 import processStatuses from '@/routes/process-statuses';
 import projects from '@/routes/projects';
+import websites from '@/routes/websites';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -58,6 +59,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Статусы процессов',
         href: processStatuses.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Сайты',
+        href: websites.index(),
         icon: LayoutGrid,
     },
 ];

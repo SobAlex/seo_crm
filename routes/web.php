@@ -5,6 +5,7 @@ use App\Http\Controllers\WebsiteTypeController;
 use App\Http\Controllers\BusinessProcessController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProcessStatusController;
+use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -22,4 +23,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('business-processes', BusinessProcessController::class);
     Route::resource('projects', ProjectController::class);
     Route::resource('process-statuses', ProcessStatusController::class);
+    Route::resource('websites', WebsiteController::class);
 });

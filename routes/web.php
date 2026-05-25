@@ -8,6 +8,7 @@ use App\Http\Controllers\ProcessStatusController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\TrackController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -28,4 +29,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('websites', WebsiteController::class);
     Route::resource('keywords', KeywordController::class);
     Route::resource('tracks', TrackController::class);
+    Route::resource('tasks', TaskController::class);
 });

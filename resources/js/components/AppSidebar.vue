@@ -23,6 +23,7 @@ import businessProcesses from '@/routes/business-processes';
 import processStatuses from '@/routes/process-statuses';
 import projects from '@/routes/projects';
 import websites from '@/routes/websites';
+import keywords from '@/routes/keywords';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -65,6 +66,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Сайты',
         href: websites.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Ключевые слова',
+        href: keywords.index(),
         icon: LayoutGrid,
     },
 ];

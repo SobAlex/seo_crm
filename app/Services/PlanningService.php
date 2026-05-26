@@ -80,60 +80,65 @@ class PlanningService
      * Рассчитывает прогресс плана
      */
     public function calculateProgress(Planning $planning): array
-    {
-        $facts = $planning->facts()->orderBy('week_number')->get();
+{
+    $facts = $planning->facts()->orderBy('week_number')->get();
 
-        if ($facts->isEmpty()) {
-            return [
-                'cumulative_target' => 0,
-                'cumulative_fact' => 0,
-                'progress_percent' => 0,
-                'days_passed' => 0,
-                'total_days' => 0,
-                'forecast' => 0,
-                'status' => 'not_started',
-            ];
-        }
-
-        $cumulativeTarget = 0;
-        $cumulativeFact = 0;
-        $totalDays = 0;
-        $daysPassed = 0;
-        $today = Carbon::today();
-
-        foreach ($facts as $fact) {
-            $targetPerDay = $planning->target_value / $fact->days_in_week;
-            $weekTarget = $targetPerDay * $fact->days_in_week;
-            $cumulativeTarget += $weekTarget;
-
-            $value = $fact->manual_value ?? $fact->actual_value ?? 0;
-            $cumulativeFact += $value;
-
-            $weekEnd = Carbon::parse($fact->week_end);
-            if ($weekEnd->lt($today)) {
-                $daysPassed += $fact->days_in_week;
-            } elseif ($weekEnd->gte($today) && Carbon::parse($fact->week_start)->lte($today)) {
-                $daysPassed += $today->diffInDays(Carbon::parse($fact->week_start)) + 1;
-            }
-
-            $totalDays += $fact->days_in_week;
-        }
-
-        $progressPercent = $cumulativeTarget > 0 ? ($cumulativeFact / $cumulativeTarget) * 100 : 0;
-        $forecast = $daysPassed > 0 ? ($cumulativeFact / $daysPassed) * $totalDays : 0;
-
-        $status = $this->getStatus($progressPercent, $planning->alert_threshold);
-
+    if ($facts->isEmpty()) {
         return [
-            'cumulative_target' => round($cumulativeTarget, 2),
-            'cumulative_fact' => round($cumulativeFact, 2),
-            'progress_percent' => round($progressPercent, 2),
-            'days_passed' => $daysPassed,
-            'total_days' => $totalDays,
-            'forecast' => round($forecast, 2),
-            'status' => $status,
+            'cumulative_target' => 0,
+            'cumulative_fact' => 0,
+            'progress_percent' => 0,
+            'days_passed' => 0,
+            'total_days' => 0,
+            'forecast' => 0,
+            'status' => 'not_started',
         ];
     }
+
+    $cumulativeTarget = 0;
+    $cumulativeFact = 0;
+    $totalDays = 0;
+    $daysPassed = 0;
+    $today = Carbon::today();
+
+    foreach ($facts as $fact) {
+        // Защита от деления на ноль
+        if ($fact->days_in_week <= 0) {
+            continue;
+        }
+
+        $targetPerDay = $planning->target_value / $fact->days_in_week;
+        $weekTarget = $targetPerDay * $fact->days_in_week;
+        $cumulativeTarget += $weekTarget;
+
+        $value = $fact->manual_value ?? $fact->actual_value ?? 0;
+        $cumulativeFact += $value;
+
+        $weekEnd = Carbon::parse($fact->week_end);
+        if ($weekEnd->lt($today)) {
+            $daysPassed += $fact->days_in_week;
+        } elseif ($weekEnd->gte($today) && Carbon::parse($fact->week_start)->lte($today)) {
+            $daysPassed += $today->diffInDays(Carbon::parse($fact->week_start)) + 1;
+        }
+
+        $totalDays += $fact->days_in_week;
+    }
+
+    $progressPercent = $cumulativeTarget > 0 ? ($cumulativeFact / $cumulativeTarget) * 100 : 0;
+    $forecast = $daysPassed > 0 ? ($cumulativeFact / $daysPassed) * $totalDays : 0;
+
+    $status = $this->getStatus($progressPercent, $planning->alert_threshold);
+
+    return [
+        'cumulative_target' => round($cumulativeTarget, 2),
+        'cumulative_fact' => round($cumulativeFact, 2),
+        'progress_percent' => round($progressPercent, 2),
+        'days_passed' => $daysPassed,
+        'total_days' => $totalDays,
+        'forecast' => round($forecast, 2),
+        'status' => $status,
+    ];
+}
 
     protected function getStatus(float $progressPercent, float $alertThreshold): string
     {

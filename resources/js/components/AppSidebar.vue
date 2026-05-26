@@ -26,6 +26,7 @@ import websites from '@/routes/websites';
 import keywords from '@/routes/keywords';
 import tracks from '@/routes/tracks';
 import tasks from '@/routes/tasks';
+import plannings from '@/routes/plannings';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -86,6 +87,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Задачи',
         href: tasks.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Планирование',
+        href: plannings.index(),
         icon: LayoutGrid,
     },
 ];

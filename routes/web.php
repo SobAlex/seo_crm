@@ -9,6 +9,7 @@ use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\TrackController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\PlanningController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('keywords', KeywordController::class);
     Route::resource('tracks', TrackController::class);
     Route::resource('tasks', TaskController::class);
+    Route::resource('tags', TagController::class);
     Route::resource('plannings', PlanningController::class);
     Route::post('plannings/{planning}/manual-fact', [PlanningController::class, 'storeManualFact'])->name('plannings.manual-fact');
 });

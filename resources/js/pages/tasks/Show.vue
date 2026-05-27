@@ -102,6 +102,73 @@
                             </div>
                         </dl>
                     </div>
+
+                    <!-- Комментарии (внутри основного контейнера) -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Комментарии</h3>
+
+                        <!-- Список комментариев -->
+                        <div class="space-y-4 mb-6">
+                            <div v-for="comment in task.comments" :key="comment.id" class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-medium">{{ comment.user?.name || comment.contractor?.name }}</span>
+                                        <span class="text-xs text-gray-500">{{ formatDateTime(comment.created_at) }}</span>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <span
+                                            v-for="tag in comment.tags"
+                                            :key="tag.id"
+                                            class="px-2 py-0.5 text-xs rounded-full"
+                                            :style="{ backgroundColor: tag.color + '20', color: tag.color }"
+                                        >
+                                            {{ tag.title }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-gray-700">{{ comment.text }}</p>
+                            </div>
+
+                            <div v-if="!task.comments?.length" class="text-gray-500 text-sm">
+                                Нет комментариев
+                            </div>
+                        </div>
+
+                        <!-- Форма добавления комментария -->
+                        <form @submit.prevent="addComment" class="mt-4 border-t pt-4">
+                            <div>
+                                <Label for="comment_text">Добавить комментарий</Label>
+                                <textarea
+                                    id="comment_text"
+                                    v-model="newComment.text"
+                                    rows="3"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                    placeholder="Напишите комментарий..."
+                                ></textarea>
+                            </div>
+
+                            <div class="mt-2">
+                                <Label>Метки комментария</Label>
+                                <div class="flex flex-wrap gap-2 mt-1">
+                                    <label v-for="tag in commentTags" :key="tag.id" class="flex items-center space-x-1">
+                                        <input type="checkbox" :value="tag.id" v-model="newComment.tag_ids" />
+                                        <span
+                                            class="px-2 py-1 rounded-full text-xs"
+                                            :style="{ backgroundColor: tag.color + '20', color: tag.color }"
+                                        >
+                                            {{ tag.title }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end mt-3">
+                                <Button type="submit" variant="store" size="sm" :disabled="commentProcessing">
+                                    {{ commentProcessing ? 'Отправка...' : 'Добавить комментарий' }}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,9 +176,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { index, edit } from '@/routes/tasks'
 import { destroy } from '@/actions/App/Http/Controllers/TaskController'
 
@@ -149,4 +218,42 @@ const destroyTask = () => {
         router[method](url)
     }
 }
+
+const newComment = ref({
+    text: '',
+    tag_ids: [] as number[]
+})
+const commentProcessing = ref(false)
+const commentTags = ref<any[]>([])
+
+// Загрузка меток комментариев
+const loadCommentTags = async () => {
+    try {
+        const response = await fetch('/api/comment-tags')
+        commentTags.value = await response.json()
+    } catch (error) {
+        console.error('Ошибка загрузки меток:', error)
+    }
+}
+
+const addComment = () => {
+    if (!newComment.value.text.trim()) return
+
+    commentProcessing.value = true
+
+    router.post(`/tasks/${props.task.id}/comments`, newComment.value, {
+        preserveState: true,
+        onSuccess: () => {
+            newComment.value = { text: '', tag_ids: [] }
+            commentProcessing.value = false
+        },
+        onError: () => {
+            commentProcessing.value = false
+        }
+    })
+}
+
+onMounted(() => {
+    loadCommentTags()
+})
 </script>

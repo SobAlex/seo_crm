@@ -103,7 +103,7 @@ const processing = ref(false)
 
 const submit = () => {
     processing.value = true
-    const { url, method } = update(props.client.id)
+    const { url, method } = update({ client: props.client.id })
 
     router[method](url, form, {
         preserveState: false,
@@ -111,9 +111,11 @@ const submit = () => {
             processing.value = false
         },
         onSuccess: () => {
+            console.log('Успешно!')
             router.visit(index().url)
         },
         onError: (err) => {
+            console.log('Ошибка:', err)
             errors.value = err
         },
     })

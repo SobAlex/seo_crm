@@ -11,6 +11,8 @@ use App\Http\Controllers\TrackController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\PlanningController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TaskCommentController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -35,4 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('tags', TagController::class);
     Route::resource('plannings', PlanningController::class);
     Route::post('plannings/{planning}/manual-fact', [PlanningController::class, 'storeManualFact'])->name('plannings.manual-fact');
+    Route::resource('reports', ReportController::class)->except(['edit', 'update']);
+    Route::get('reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
+    Route::post('reports/{report}/send', [ReportController::class, 'send'])->name('reports.send');
+    Route::post('/tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('tasks.comments.store');
 });
+
+Route::get('/api/comment-tags', function () {
+    return App\Models\CommentTag::orderBy('title')->get(['id', 'title', 'color']);
+})->name('api.comment-tags');

@@ -28,6 +28,7 @@ import tracks from '@/routes/tracks';
 import tasks from '@/routes/tasks';
 import tags from '@/routes/tags';
 import plannings from '@/routes/plannings';
+import reports from '@/routes/reports';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -100,6 +101,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Планирование',
         href: plannings.index(),
+        icon: LayoutGrid,
+    },
+
+    {
+        title: 'Отчёты',
+        href: reports.index(),
         icon: LayoutGrid,
     },
 ];

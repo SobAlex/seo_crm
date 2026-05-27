@@ -94,13 +94,24 @@ class TaskController extends Controller
     }
 
     public function show(Task $task)
-    {
-        $task->load(['track', 'status', 'assigneeUser', 'assigneeContractor', 'createdBy', 'tags', 'keywords']);
+{
+    $task->load([
+        'track',
+        'status',
+        'assigneeUser',
+        'assigneeContractor',
+        'createdBy',
+        'tags',
+        'keywords',
+        'comments.tags',
+        'comments.user',
+        'comments.contractor'
+    ]);
 
-        return Inertia::render('tasks/Show', [
-            'task' => $task
-        ]);
-    }
+    return Inertia::render('tasks/Show', [
+        'task' => $task
+    ]);
+}
 
     public function edit(Task $task)
     {

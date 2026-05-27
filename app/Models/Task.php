@@ -58,4 +58,9 @@ class Task extends Model
     {
         return $this->belongsToMany(Keyword::class, 'task_keyword');
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
 }

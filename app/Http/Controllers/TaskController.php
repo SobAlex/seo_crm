@@ -6,7 +6,6 @@ use App\Models\Task;
 use App\Models\Track;
 use App\Models\ProcessStatus;
 use App\Models\User;
-use App\Models\Contractor;
 use App\Models\Tag;
 use App\Models\Keyword;
 use Illuminate\Http\Request;
@@ -18,20 +17,23 @@ class TaskController extends Controller
     {
         $query = Task::with(['track', 'status', 'assigneeUser', 'assigneeContractor']);
 
-        if ($request->track_id) {
-            $query->where('track_id', $request->track_id);
-        }
-
-        if ($request->status_id) {
-            $query->where('status_id', $request->status_id);
-        }
-
-        if ($request->assignee_type === 'user' && $request->assignee_id) {
-            $query->where('assignee_user_id', $request->assignee_id);
-        }
-
-        if ($request->assignee_type === 'contractor' && $request->assignee_id) {
-            $query->where('assignee_contractor_id', $request->assignee_id);
+        // Если пользователь — подрядчик (роль contractor)
+        if (auth()->user()->role === 'contractor') {
+            $query->where('assignee_contractor_id', auth()->id());
+        } else {
+            // Для сотрудников и админов — обычные фильтры
+            if ($request->track_id) {
+                $query->where('track_id', $request->track_id);
+            }
+            if ($request->status_id) {
+                $query->where('status_id', $request->status_id);
+            }
+            if ($request->assignee_type === 'user' && $request->assignee_id) {
+                $query->where('assignee_user_id', $request->assignee_id);
+            }
+            if ($request->assignee_type === 'contractor' && $request->assignee_id) {
+                $query->where('assignee_contractor_id', $request->assignee_id);
+            }
         }
 
         return Inertia::render('tasks/Index', [
@@ -39,17 +41,30 @@ class TaskController extends Controller
             'trackId' => $request->track_id,
             'filters' => $request->only(['status_id', 'assignee_type', 'assignee_id']),
             'statuses' => ProcessStatus::orderBy('sort_order')->get(['id', 'title', 'color']),
-            'allTracks' => Track::orderBy('title')->get(['id', 'title']),  // ← добавляем список треков
+            'allTracks' => Track::orderBy('title')->get(['id', 'title']),
         ]);
     }
 
     public function create(Request $request)
     {
+        // Подрядчик не может создавать задачи
+        if (auth()->user()->role === 'contractor') {
+            abort(403);
+        }
+
+        $teamId = auth()->user()->team_id;
+
         return Inertia::render('tasks/Create', [
             'tracks' => Track::orderBy('title')->get(['id', 'title', 'project_id']),
             'statuses' => ProcessStatus::orderBy('sort_order')->get(['id', 'title', 'color']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
-            'contractors' => Contractor::orderBy('name')->get(['id', 'name']),
+            'users' => User::where('team_id', $teamId)
+                ->whereIn('role', ['owner', 'admin', 'employee'])
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'contractors' => User::where('team_id', $teamId)
+                ->where('role', 'contractor')
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'tags' => Tag::orderBy('title')->get(['id', 'title', 'color']),
             'keywords' => Keyword::orderBy('keyword')->get(['id', 'keyword']),
             'selectedTrackId' => $request->track_id,
@@ -66,7 +81,7 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'deadline' => 'nullable|date',
             'assignee_user_id' => 'nullable|exists:users,id',
-            'assignee_contractor_id' => 'nullable|exists:contractors,id',
+            'assignee_contractor_id' => 'nullable|exists:users,id',
             'checklist' => 'nullable|array',
             'structure' => 'nullable|array',
             'tag_ids' => 'nullable|array',
@@ -84,7 +99,6 @@ class TaskController extends Controller
         if (!empty($validated['tag_ids'])) {
             $task->tags()->sync($validated['tag_ids']);
         }
-
         if (!empty($validated['keyword_ids'])) {
             $task->keywords()->sync($validated['keyword_ids']);
         }
@@ -94,33 +108,51 @@ class TaskController extends Controller
     }
 
     public function show(Task $task)
-{
-    $task->load([
-        'track',
-        'status',
-        'assigneeUser',
-        'assigneeContractor',
-        'createdBy',
-        'tags',
-        'keywords',
-        'comments.tags',
-        'comments.user',
-        'comments.contractor'
-    ]);
+    {
+        // Подрядчик может видеть только свои задачи
+        if (auth()->user()->role === 'contractor' && $task->assignee_contractor_id !== auth()->id()) {
+            abort(403);
+        }
 
-    return Inertia::render('tasks/Show', [
-        'task' => $task
-    ]);
-}
+        $task->load([
+            'track',
+            'status',
+            'assigneeUser',
+            'assigneeContractor',
+            'createdBy',
+            'tags',
+            'keywords',
+            'comments.tags',
+            'comments.user',
+            'comments.contractor'
+        ]);
+
+        return Inertia::render('tasks/Show', [
+            'task' => $task
+        ]);
+    }
 
     public function edit(Task $task)
     {
+        // Подрядчик не может редактировать задачи
+        if (auth()->user()->role === 'contractor') {
+            abort(403);
+        }
+
+        $teamId = auth()->user()->team_id;
+
         return Inertia::render('tasks/Edit', [
             'task' => $task,
             'tracks' => Track::orderBy('title')->get(['id', 'title', 'project_id']),
             'statuses' => ProcessStatus::orderBy('sort_order')->get(['id', 'title', 'color']),
-            'users' => User::orderBy('name')->get(['id', 'name']),
-            'contractors' => Contractor::orderBy('name')->get(['id', 'name']),
+            'users' => User::where('team_id', $teamId)
+                ->whereIn('role', ['owner', 'admin', 'employee'])
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'contractors' => User::where('team_id', $teamId)
+                ->where('role', 'contractor')
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'tags' => Tag::orderBy('title')->get(['id', 'title', 'color']),
             'keywords' => Keyword::orderBy('keyword')->get(['id', 'keyword']),
         ]);
@@ -128,6 +160,11 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
+        // Подрядчик не может обновлять задачи
+        if (auth()->user()->role === 'contractor') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -136,7 +173,7 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'deadline' => 'nullable|date',
             'assignee_user_id' => 'nullable|exists:users,id',
-            'assignee_contractor_id' => 'nullable|exists:contractors,id',
+            'assignee_contractor_id' => 'nullable|exists:users,id',
             'checklist' => 'nullable|array',
             'structure' => 'nullable|array',
             'tag_ids' => 'nullable|array',
@@ -159,7 +196,6 @@ class TaskController extends Controller
         if (!empty($validated['tag_ids'])) {
             $task->tags()->sync($validated['tag_ids']);
         }
-
         if (!empty($validated['keyword_ids'])) {
             $task->keywords()->sync($validated['keyword_ids']);
         }
@@ -170,6 +206,11 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
+        // Подрядчик не может удалять задачи
+        if (auth()->user()->role === 'contractor') {
+            abort(403);
+        }
+
         $trackId = $task->track_id;
         $task->delete();
 

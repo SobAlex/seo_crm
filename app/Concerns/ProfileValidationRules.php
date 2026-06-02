@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
@@ -18,6 +19,7 @@ trait ProfileValidationRules
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'company_name' => $this->companyNameRules(),
         ];
     }
 
@@ -46,6 +48,21 @@ trait ProfileValidationRules
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
+        ];
+    }
+
+    /**
+     * Get the validation rules used to validate company name.
+     *
+     * @return array<int, ValidationRule|array<mixed>|string>
+     */
+    protected function companyNameRules(): array
+    {
+        return [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique(Team::class, 'name'),
         ];
     }
 }

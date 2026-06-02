@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, FolderGit2, LayoutGrid, Users } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import { computed } from 'vue';
 
 import {
     Sidebar,
@@ -29,87 +30,91 @@ import tasks from '@/routes/tasks';
 import tags from '@/routes/tags';
 import plannings from '@/routes/plannings';
 import reports from '@/routes/reports';
+import admin from '@/routes/admin';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const user = usePage().props.auth.user;
+const isContractor = computed(() => user?.role === 'contractor');
+
+const allNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Клиенты',
         href: clients.index().url,
         icon: Users,
     },
-
     {
         title: 'Типы сайтов',
         href: websiteTypes.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Бизнес-процессы',
         href: businessProcesses.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Проекты',
         href: projects.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Статусы процессов',
         href: processStatuses.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Сайты',
         href: websites.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Ключевые слова',
         href: keywords.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Треки',
         href: tracks.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Задачи',
         href: tasks.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Теги',
         href: tags.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Планирование',
         href: plannings.index(),
         icon: LayoutGrid,
     },
-
     {
         title: 'Отчёты',
         href: reports.index(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Управление командой',
+        href: admin.team.index().url,
+        icon: Users,
+    },
 ];
+
+const filteredNavItems = computed(() => {
+    if (isContractor.value) {
+        return allNavItems.filter(item => item.title === 'Задачи');
+    }
+    return allNavItems;
+});
 
 const footerNavItems: NavItem[] = [
     {
@@ -140,13 +145,12 @@ const footerNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="filteredNavItems" />
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+            <NavFooter v-if="!isContractor" :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
-    <slot />
 </template>

@@ -8,20 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('contractors', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->string('telegram')->nullable();
-            $table->string('password');
-            $table->decimal('rating', 3, 2)->default(0);
+            $table->string('plan')->default('free'); // free, pro, enterprise
+            $table->timestamp('trial_ends_at')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('contractors');
+        Schema::dropIfExists('teams');
     }
 };

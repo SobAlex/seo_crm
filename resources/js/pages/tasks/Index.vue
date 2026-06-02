@@ -1,7 +1,7 @@
 <template>
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center mb-4">
+            <div v-if="!isContractor" class="flex justify-between items-center mb-4">
                 <div class="flex space-x-2 items-center">
                     <select
                         v-model="selectedTrackId"
@@ -77,7 +77,7 @@
                         </tbody>
                     </table>
 
-                    <div class="mt-4" v-html="tasks.links"></div>
+                    <!-- <div class="mt-4" v-html="tasks.links"></div> -->
                 </div>
             </div>
         </div>
@@ -85,9 +85,13 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import TextLink from '@/components/TextLink.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+
+const user = usePage().props.auth.user
+const isContractor = computed(() => user?.role === 'contractor')
 
 const props = defineProps<{
     tasks: any

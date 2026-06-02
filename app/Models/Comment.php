@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,7 +11,7 @@ class Comment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'text', 'task_id', 'user_id', 'contractor_id'
+        'text', 'task_id', 'user_id', 'contractor_id', 'team_id'
     ];
 
     public function task()
@@ -25,11 +26,31 @@ class Comment extends Model
 
     public function contractor()
     {
-        return $this->belongsTo(Contractor::class);
+        return $this->belongsTo(User::class, 'contractor_id');
     }
 
     public function tags()
     {
         return $this->belongsToMany(CommentTag::class, 'comment_comment_tag');
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('team', function (Builder $builder) {
+            if (auth()->check() && auth()->user()->team_id) {
+                $builder->where('team_id', auth()->user()->team_id);
+            }
+        });
+
+        static::creating(function ($model) {
+            if (auth()->check() && auth()->user()->team_id) {
+                $model->team_id = auth()->user()->team_id;
+            }
+        });
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

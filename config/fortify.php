@@ -154,4 +154,8 @@ return [
         ]),
     ],
 
+    'responses' => [
+        'login' => \App\Http\Responses\LoginResponse::class,
+    ],
+
 ];

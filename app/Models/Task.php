@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +13,7 @@ class Task extends Model
     protected $fillable = [
         'title', 'description', 'track_id', 'status_id', 'priority',
         'deadline', 'assignee_user_id', 'assignee_contractor_id', 'created_by_id',
-        'checklist', 'structure', 'files', 'completed_at'
+        'checklist', 'structure', 'files', 'completed_at', 'team_id'
     ];
 
     protected $casts = [
@@ -41,7 +42,7 @@ class Task extends Model
 
     public function assigneeContractor()
     {
-        return $this->belongsTo(Contractor::class, 'assignee_contractor_id');
+        return $this->belongsTo(User::class, 'assignee_contractor_id');
     }
 
     public function createdBy()
@@ -62,5 +63,25 @@ class Task extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class)->latest();
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('team', function (Builder $builder) {
+            if (auth()->check() && auth()->user()->team_id) {
+                $builder->where('team_id', auth()->user()->team_id);
+            }
+        });
+
+        static::creating(function ($model) {
+            if (auth()->check() && auth()->user()->team_id) {
+                $model->team_id = auth()->user()->team_id;
+            }
+        });
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
     }
 }

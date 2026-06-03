@@ -15,39 +15,27 @@ class PlanningService
     public function generateWeeks(Carbon $start, Carbon $end): Collection
     {
         $weeks = collect();
-        $current = $start->copy();
+        $current = $start->copy()->startOfDay();
+        $end = $end->copy()->endOfDay();
+        $weekNumber = 1;
 
-        // Первая неделя: от period_start до первого воскресенья
-        $firstSunday = $current->copy()->endOfWeek(Carbon::SUNDAY);
-        if ($firstSunday->greaterThan($end)) {
-            $firstSunday = $end->copy();
-        }
-
-        $weeks->push([
-            'week_number' => 1,
-            'week_start' => $current->copy(),
-            'week_end' => $firstSunday->copy(),
-            'days_in_week' => $firstSunday->diffInDays($current) + 1,
-        ]);
-
-        $current = $firstSunday->copy()->addDay();
-        $weekNumber = 2;
-
-        // Полные недели
-        while ($current->lte($end)) {
+        while ($current <= $end) {
             $weekEnd = $current->copy()->endOfWeek(Carbon::SUNDAY);
-            if ($weekEnd->greaterThan($end)) {
+            if ($weekEnd > $end) {
                 $weekEnd = $end->copy();
             }
+            // Используем ->diffInDays() без +1, потому что $weekEnd и $current могут быть одним днём?
+            // Лучше: количество дней = $weekEnd->diffInDays($current) + 1
+            $daysInWeek = $current->diffInDays($weekEnd) + 1;
 
             $weeks->push([
                 'week_number' => $weekNumber,
                 'week_start' => $current->copy(),
                 'week_end' => $weekEnd->copy(),
-                'days_in_week' => $weekEnd->diffInDays($current) + 1,
+                'days_in_week' => $daysInWeek,
             ]);
 
-            $current = $weekEnd->copy()->addDay();
+            $current = $weekEnd->copy()->addDay()->startOfDay();
             $weekNumber++;
         }
 
@@ -80,64 +68,60 @@ class PlanningService
      * Рассчитывает прогресс плана
      */
     public function calculateProgress(Planning $planning): array
-{
-    $facts = $planning->facts()->orderBy('week_number')->get();
+    {
+        $facts = $planning->facts()->orderBy('week_number')->get();
 
-    if ($facts->isEmpty()) {
+        if ($facts->isEmpty()) {
+            return [
+                'cumulative_target' => 0,
+                'cumulative_fact' => 0,
+                'progress_percent' => 0,
+                'days_passed' => 0,
+                'total_days' => 0,
+                'forecast' => 0,
+                'status' => 'not_started',
+            ];
+        }
+
+        $totalDays = $facts->sum('days_in_week');
+        if ($totalDays <= 0) {
+            $totalDays = \Carbon\Carbon::parse($planning->period_start)->diffInDays(\Carbon\Carbon::parse($planning->period_end)) + 1;
+        }
+
+        $cumulativeTarget = 0;
+        $cumulativeFact = 0;
+        $daysPassed = 0;
+        $today = \Carbon\Carbon::today();
+
+        foreach ($facts as $fact) {
+            // Правильный расчёт плана недели: пропорционально дням
+            $weekTarget = ($planning->target_value / $totalDays) * $fact->days_in_week;
+            $cumulativeTarget += $weekTarget;
+
+            $value = $fact->manual_value ?? $fact->actual_value ?? 0;
+            $cumulativeFact += $value;
+
+            $weekEnd = \Carbon\Carbon::parse($fact->week_end);
+            if ($weekEnd->lt($today)) {
+                $daysPassed += $fact->days_in_week;
+            } elseif ($weekEnd->gte($today) && \Carbon\Carbon::parse($fact->week_start)->lte($today)) {
+                $daysPassed += $today->diffInDays(\Carbon\Carbon::parse($fact->week_start)) + 1;
+            }
+        }
+
+        $progressPercent = $cumulativeTarget > 0 ? ($cumulativeFact / $cumulativeTarget) * 100 : 0;
+        $forecast = $daysPassed > 0 ? ($cumulativeFact / $daysPassed) * $totalDays : 0;
+        $status = $this->getStatus($progressPercent, $planning->alert_threshold);
+
         return [
-            'cumulative_target' => 0,
-            'cumulative_fact' => 0,
-            'progress_percent' => 0,
-            'days_passed' => 0,
-            'total_days' => 0,
-            'forecast' => 0,
-            'status' => 'not_started',
+            'cumulative_target' => round($cumulativeTarget, 2),
+            'cumulative_fact' => round($cumulativeFact, 2),
+            'progress_percent' => round($progressPercent, 2),
+            'days_passed' => $daysPassed,
+            'total_days' => $totalDays,
+            'forecast' => round($forecast, 2),
+            'status' => $status,
         ];
-    }
-
-    $cumulativeTarget = 0;
-    $cumulativeFact = 0;
-    $totalDays = 0;
-    $daysPassed = 0;
-    $today = Carbon::today();
-
-    foreach ($facts as $fact) {
-        // Защита от деления на ноль
-        if ($fact->days_in_week <= 0) {
-            continue;
-        }
-
-        $targetPerDay = $planning->target_value / $fact->days_in_week;
-        $weekTarget = $targetPerDay * $fact->days_in_week;
-        $cumulativeTarget += $weekTarget;
-
-        $value = $fact->manual_value ?? $fact->actual_value ?? 0;
-        $cumulativeFact += $value;
-
-        $weekEnd = Carbon::parse($fact->week_end);
-        if ($weekEnd->lt($today)) {
-            $daysPassed += $fact->days_in_week;
-        } elseif ($weekEnd->gte($today) && Carbon::parse($fact->week_start)->lte($today)) {
-            $daysPassed += $today->diffInDays(Carbon::parse($fact->week_start)) + 1;
-        }
-
-        $totalDays += $fact->days_in_week;
-    }
-
-    $progressPercent = $cumulativeTarget > 0 ? ($cumulativeFact / $cumulativeTarget) * 100 : 0;
-    $forecast = $daysPassed > 0 ? ($cumulativeFact / $daysPassed) * $totalDays : 0;
-
-    $status = $this->getStatus($progressPercent, $planning->alert_threshold);
-
-    return [
-        'cumulative_target' => round($cumulativeTarget, 2),
-        'cumulative_fact' => round($cumulativeFact, 2),
-        'progress_percent' => round($progressPercent, 2),
-        'days_passed' => $daysPassed,
-        'total_days' => $totalDays,
-        'forecast' => round($forecast, 2),
-        'status' => $status,
-    ];
 }
 
     protected function getStatus(float $progressPercent, float $alertThreshold): string

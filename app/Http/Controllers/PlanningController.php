@@ -72,10 +72,18 @@ class PlanningController extends Controller
     public function show(Planning $planning)
     {
         $planning->load(['website', 'track', 'facts']);
-        $planning->progress = $this->planningService->calculateProgress($planning);
+        $progress = $this->planningService->calculateProgress($planning);
+        // Вычисляем общее количество дней напрямую из фактов
+        $totalDays = $planning->facts->sum('days_in_week');
+        if ($totalDays <= 0) {
+            // Запасной вариант – расчёт по разнице дат
+            $totalDays = \Carbon\Carbon::parse($planning->period_start)->diffInDays(\Carbon\Carbon::parse($planning->period_end)) + 1;
+        }
+        $planning->progress = $progress;
 
         return Inertia::render('plannings/Show', [
             'planning' => $planning,
+            'totalDays' => $totalDays,
         ]);
     }
 

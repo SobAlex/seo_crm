@@ -101,7 +101,11 @@
                                     <tr v-for="fact in planning.facts" :key="fact.week_number">
                                         <td class="px-4 py-2 text-sm">Неделя {{ fact.week_number }}</td>
                                         <td class="px-4 py-2 text-sm">{{ formatDate(fact.week_start) }} — {{ formatDate(fact.week_end) }}</td>
-                                        <td class="px-4 py-2 text-sm">{{ (planning.target_value / fact.days_in_week * fact.days_in_week).toFixed(2) }}</td>
+                                        <!-- Исправленный расчёт плана недели -->
+                                        <td class="px-4 py-2 text-sm">
+                                            {{ (planning.target_value / planning.facts.reduce((sum, f) => sum + f.days_in_week, 0) * fact.days_in_week).toFixed(2) }}
+                                        </td>
+
                                         <td class="px-4 py-2 text-sm">
                                             <span :class="fact.actual_value !== null ? 'text-green-600' : 'text-gray-400'">
                                                 {{ fact.actual_value !== null ? fact.actual_value : '—' }}
@@ -145,6 +149,7 @@ import { destroy } from '@/actions/App/Http/Controllers/PlanningController'
 
 const props = defineProps<{
     planning: any
+    totalDays: number   // ← обязательно передать из контроллера
 }>()
 
 const manualValues = ref<Record<number, number>>({})
@@ -187,6 +192,7 @@ const saveManualFact = (weekNumber: number) => {
         preserveState: true,
         onSuccess: () => {
             manualValues.value[weekNumber] = undefined
+            router.reload() // ← перезагружаем страницу, чтобы обновить прогресс
         },
     })
 }

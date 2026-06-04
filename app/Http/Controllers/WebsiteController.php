@@ -51,11 +51,8 @@ class WebsiteController extends Controller
 
     public function show(Website $website)
     {
-        $website->load(['project', 'websiteType']);
-
-        return Inertia::render('websites/Show', [
-            'website' => $website
-        ]);
+        $website->load(['project', 'websiteType', 'metrikaCounter']);
+        return Inertia::render('websites/Show', ['website' => $website]);
     }
 
     public function edit(Website $website)

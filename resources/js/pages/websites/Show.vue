@@ -66,6 +66,19 @@
                             </div>
                         </dl>
                     </div>
+
+                    <!-- <div class="mt-6">
+                        <h2 class="text-lg font-semibold mb-2">Яндекс.Метрика</h2>
+                        <div v-if="website.metrika_counter">
+                            <p>Счётчик ID: {{ website.metrika_counter.counter_id }}</p>
+                            <p>Статус: {{ website.metrika_counter.sync_status || 'не синхронизирован' }}</p>
+                            <p>Последняя синхронизация: {{ formatDateTime(website.metrika_counter.last_sync_at) }}</p>
+                            <button @click="detachCounter" class="btn btn-danger mt-2">Отвязать счётчик</button>
+                        </div>
+                        <div v-else>
+                            <a :href="route('metrika.redirect')" class="btn btn-primary">Подключить Яндекс.Метрику</a>
+                        </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -92,6 +105,15 @@ const destroyWebsite = () => {
     if (confirm(`Удалить сайт "${props.website.url}"?`)) {
         const { url, method } = destroy({ website: props.website.id })
         router[method](url)
+    }
+}
+
+const detachCounter = () => {
+    if (confirm('Отвязать счётчик Яндекс.Метрики от этого сайта?')) {
+        router.delete(`/metrika/${website.metrika_counter.id}`, {
+            preserveState: true,
+            onSuccess: () => router.reload(),
+        });
     }
 }
 </script>

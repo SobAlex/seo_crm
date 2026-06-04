@@ -8,6 +8,7 @@ use App\Models\Track;
 use App\Services\PlanningService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Artisan;
 
 class PlanningController extends Controller
 {
@@ -149,5 +150,11 @@ class PlanningController extends Controller
 
         return redirect()->route('plannings.show', $planning)
             ->with('success', 'Фактическое значение сохранено');
+    }
+
+    public function syncMetrika(Planning $planning)
+    {
+        Artisan::call('metrika:sync', ['--planning-id' => $planning->id]);
+        return back()->with('success', 'Синхронизация запущена. Данные обновятся в течение минуты.');
     }
 }

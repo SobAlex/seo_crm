@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TeamMemberController;
+use App\Http\Controllers\MetrikaController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -66,3 +67,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/api/comment-tags', function () {
     return App\Models\CommentTag::orderBy('title')->get(['id', 'title', 'color']);
 })->name('api.comment-tags');
+
+// ======== metrica =========
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/metrika/redirect', [MetrikaController::class, 'redirect'])->name('metrika.redirect');
+    Route::get('/metrika/callback', [MetrikaController::class, 'callback'])->name('metrika.callback');
+    Route::get('/metrika/select-counter', [MetrikaController::class, 'selectCounter'])->name('metrika.select-counter');
+    Route::post('/metrika/attach', [MetrikaController::class, 'attachCounter'])->name('metrika.attach');
+    Route::delete('/metrika/{counter}', [MetrikaController::class, 'detachCounter'])->name('metrika.detach');
+    Route::post('/plannings/{planning}/sync-metrika', [PlanningController::class, 'syncMetrika'])->name('plannings.sync-metrika');
+});

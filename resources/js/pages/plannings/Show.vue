@@ -135,6 +135,9 @@
                     </div>
                 </div>
             </div>
+            <!-- <Button @click="syncWithMetrika" variant="outline" class="ml-2 mt-5">
+                Синхронизировать с Метрикой
+            </Button> -->
         </div>
     </div>
 </template>
@@ -202,5 +205,12 @@ const destroyPlanning = () => {
         const { url, method } = destroy({ planning: props.planning.id })
         router[method](url)
     }
+}
+
+const syncWithMetrika = () => {
+    router.post(`/plannings/${props.planning.id}/sync-metrika`, {}, {
+        preserveState: true,
+        onSuccess: () => router.reload(),
+    });
 }
 </script>

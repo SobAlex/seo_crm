@@ -73,19 +73,45 @@ class PlanningController extends Controller
     {
         $planning->load(['website', 'track', 'facts']);
         $progress = $this->planningService->calculateProgress($planning);
-        // Вычисляем общее количество дней напрямую из фактов
-        $totalDays = $planning->facts->sum('days_in_week');
-        if ($totalDays <= 0) {
-            // Запасной вариант – расчёт по разнице дат
-            $totalDays = \Carbon\Carbon::parse($planning->period_start)->diffInDays(\Carbon\Carbon::parse($planning->period_end)) + 1;
+        $totalDays = $progress['total_days'];
+
+        // Подготовка данных для графика
+        $weeks = [];
+        $cumulativeTarget = 0;
+        $cumulativeActual = 0;
+        $cumulativeForecast = 0;
+
+        foreach ($planning->facts as $fact) {
+            $targetPerDay = $planning->target_value / $totalDays;
+            $weekTarget = $targetPerDay * $fact->days_in_week;
+            $cumulativeTarget += $weekTarget;
+
+            $actualValue = $fact->manual_value ?? $fact->actual_value ?? 0;
+            $cumulativeActual += $actualValue;
+
+            // Упрощённый прогноз на неделю (пропорционально дням)
+            $forecastForWeek = ($progress['forecast'] / $totalDays) * $fact->days_in_week;
+            $cumulativeForecast += $forecastForWeek;
+
+            $weeks[] = [
+                'week_number' => $fact->week_number,
+                'target' => round($weekTarget, 2),
+                'actual' => $fact->actual_value ? round($fact->actual_value, 2) : null,
+                'manual_value' => $fact->manual_value ? round($fact->manual_value, 2) : null,
+                'cumulative_target' => round($cumulativeTarget, 2),
+                'cumulative_actual' => round($cumulativeActual, 2),
+                'cumulative_forecast' => round($cumulativeForecast, 2),
+            ];
         }
+
         $planning->progress = $progress;
 
         return Inertia::render('plannings/Show', [
             'planning' => $planning,
             'totalDays' => $totalDays,
+            'weeks' => $weeks,
         ]);
-    }
+}
 
     public function edit(Planning $planning)
     {

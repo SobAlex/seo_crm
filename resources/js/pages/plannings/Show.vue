@@ -83,6 +83,8 @@
                         </div>
                     </div>
 
+                    <PlanningChart :weeks="weeks" />
+
                     <!-- Факты по неделям -->
                     <div class="mt-6">
                         <h2 class="text-lg font-semibold mb-3">Фактические значения по неделям</h2>
@@ -146,10 +148,12 @@ import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
 import { index, edit } from '@/routes/plannings'
 import { destroy } from '@/actions/App/Http/Controllers/PlanningController'
+import PlanningChart from '@/components/PlanningChart.vue';
 
 const props = defineProps<{
     planning: any
     totalDays: number   // ← обязательно передать из контроллера
+    weeks: Array,
 }>()
 
 const manualValues = ref<Record<number, number>>({})

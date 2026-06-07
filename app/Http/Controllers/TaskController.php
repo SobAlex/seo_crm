@@ -8,6 +8,9 @@ use App\Models\ProcessStatus;
 use App\Models\User;
 use App\Models\Tag;
 use App\Models\Keyword;
+use App\Events\TaskAssigned;
+use App\Notifications\TaskAssignedNotification;
+use App\Models\Contractor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -101,6 +104,17 @@ class TaskController extends Controller
         }
         if (!empty($validated['keyword_ids'])) {
             $task->keywords()->sync($validated['keyword_ids']);
+        }
+
+        if ($task->assignee_user_id) {
+            $assignee = User::find($task->assignee_user_id);
+            event(new TaskAssigned($task, $assignee));
+            $assignee->notify(new TaskAssignedNotification($task));
+        } elseif ($task->assignee_contractor_id) {
+            $assignee = Contractor::find($task->assignee_contractor_id);
+            // Для подрядчиков тоже нужно реализовать уведомления, но пока оставим.
+            // Можно через того же User, если Contractor не является User.
+            // Временно: уведомления только для сотрудников.
         }
 
         return redirect()->route('tasks.index', ['track_id' => $task->track_id])
@@ -205,6 +219,17 @@ class TaskController extends Controller
         }
         if (!empty($validated['keyword_ids'])) {
             $task->keywords()->sync($validated['keyword_ids']);
+        }
+
+        if ($task->assignee_user_id) {
+            $assignee = User::find($task->assignee_user_id);
+            event(new TaskAssigned($task, $assignee));
+            $assignee->notify(new TaskAssignedNotification($task));
+        } elseif ($task->assignee_contractor_id) {
+            $assignee = Contractor::find($task->assignee_contractor_id);
+            // Для подрядчиков тоже нужно реализовать уведомления, но пока оставим.
+            // Можно через того же User, если Contractor не является User.
+            // Временно: уведомления только для сотрудников.
         }
 
         return redirect()->route('tasks.show', $task)

@@ -62,6 +62,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/team/users/{user}', [TeamMemberController::class, 'destroyUser'])->name('admin.team.users.destroy');
     Route::delete('/admin/team/contractors/{contractor}', [TeamMemberController::class, 'destroyContractor'])->name('admin.team.contractors.destroy');
     Route::put('/admin/team/users/{user}/role', [TeamMemberController::class, 'updateRole'])->name('admin.team.users.role');
+
+    Route::get('/notifications', function () {
+        return auth()->user()->notifications()->latest()->take(10)->get();
+    })->name('notifications.index');
+    Route::post('/notifications/{id}/read', function ($id) {
+        auth()->user()->notifications()->where('id', $id)->first()->markAsRead();
+        return response()->json(['success' => true]);
+    });
+    Route::post('/notifications/read-all', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return response()->json(['success' => true]);
+    });
 });
 
 // ==================== API МАРШРУТЫ ====================

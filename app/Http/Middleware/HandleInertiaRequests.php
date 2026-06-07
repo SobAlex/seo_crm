@@ -35,11 +35,25 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        $userData = null;
+
+        if ($user) {
+            // Берем все обычные поля пользователя
+            $userData = $user->toArray();
+
+            // Добавляем количество непрочитанных уведомлений
+            $userData['unread_notifications_count'] = $user->unreadNotifications()->count();
+
+            // Добавляем последние 5 уведомлений (для выпадающего списка)
+            $userData['notifications'] = $user->notifications()->latest()->take(5)->get();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $userData,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

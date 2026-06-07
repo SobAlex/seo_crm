@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import './echo';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -25,6 +26,10 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+
+if (usePage().props.auth?.user) {
+    window.userId = usePage().props.auth.user.id;
+}
 
 // This will set light / dark mode on page load...
 initializeTheme();

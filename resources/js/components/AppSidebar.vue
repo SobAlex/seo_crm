@@ -4,6 +4,7 @@ import { BookOpen, FolderGit2, LayoutGrid, Users } from 'lucide-vue-next';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
+import NotificationsDropdown from '@/components/NotificationsDropdown.vue';
 import NavUser from '@/components/NavUser.vue';
 import { computed } from 'vue';
 
@@ -149,6 +150,7 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
+            <NotificationsDropdown />
             <NavFooter v-if="!isContractor" :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>

@@ -93,4 +93,22 @@ class TrackController extends Controller
         return redirect()->route('tracks.index', ['project_id' => $projectId])
             ->with('success', 'Трек удалён');
     }
+
+    public function kanban(Track $track)
+    {
+
+        // Загружаем бизнес-процесс со статусами, отсортированными по sort_order
+        $track->load(['businessProcess.statuses' => function ($q) {
+            $q->orderBy('sort_order');
+        }]);
+
+        // Загружаем задачи трека с отношениями для карточек
+        $tasks = $track->tasks()->with(['status', 'assigneeUser', 'assigneeContractor'])->get();
+
+        return Inertia::render('tracks/Kanban', [
+            'track' => $track,
+            'statuses' => $track->businessProcess->statuses,
+            'tasks' => $tasks,
+        ]);
+    }
 }

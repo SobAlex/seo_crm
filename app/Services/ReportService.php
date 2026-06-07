@@ -35,7 +35,7 @@ class ReportService
             ->orderBy('comments.created_at')
             ->get();
 
-        // Группировка по трекам и задачам
+        // Группировка (без изменений)
         $grouped = [];
         foreach ($comments as $comment) {
             $trackTitle = $comment->track_title;
@@ -130,7 +130,6 @@ class ReportService
     {
         $data = $report->content;
         $data['logo'] = $logoUrl;
-
         $pdf = Pdf::loadView('reports.report', $data);
         $filename = "report_{$report->id}_{$report->project_id}.pdf";
         $path = "reports/{$filename}";

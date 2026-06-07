@@ -43,6 +43,7 @@ class ReportController extends Controller
 
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'period_start' => 'required|date',

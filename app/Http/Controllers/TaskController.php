@@ -109,7 +109,6 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        // Подрядчик может видеть только свои задачи
         if (auth()->user()->role === 'contractor' && $task->assignee_contractor_id !== auth()->id()) {
             abort(403);
         }
@@ -122,10 +121,18 @@ class TaskController extends Controller
             'createdBy',
             'tags',
             'keywords',
-            'comments.tags',
-            'comments.user',
-            'comments.contractor'
         ]);
+
+        // Загружаем комментарии с тегами вручную, отключая глобальные скоупы для меток
+        $comments = $task->comments()->with([
+            'user',
+            'contractor',
+            'tags' => function ($query) {
+                $query->withoutGlobalScopes(); // Отключаем все глобальные скоупы
+            }
+        ])->get();
+
+        $task->setRelation('comments', $comments);
 
         return Inertia::render('tasks/Show', [
             'task' => $task
@@ -202,6 +209,30 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.show', $task)
             ->with('success', 'Задача обновлена');
+    }
+
+    public function updateStatus(Request $request, Task $task)
+    {
+        if (auth()->user()->role === 'contractor') {
+            abort(403);
+        }
+
+        $request->validate([
+            'status_id' => 'required|exists:process_statuses,id',
+        ]);
+
+        $status = ProcessStatus::find($request->status_id);
+        $updateData = ['status_id' => $request->status_id];
+
+        if ($status && $status->is_end_status && !$task->completed_at) {
+            $updateData['completed_at'] = now();
+        } elseif (!$status->is_end_status) {
+            $updateData['completed_at'] = null;
+        }
+
+        $task->update($updateData);
+
+        return back();
     }
 
     public function destroy(Task $task)

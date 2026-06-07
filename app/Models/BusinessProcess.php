@@ -31,4 +31,9 @@ class BusinessProcess extends Model
             }
         });
     }
+
+    public function statuses()
+    {
+        return $this->hasMany(ProcessStatus::class);
+    }
 }

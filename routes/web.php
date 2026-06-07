@@ -45,7 +45,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('process-statuses', ProcessStatusController::class);
     Route::resource('websites', WebsiteController::class);
     Route::resource('keywords', KeywordController::class);
+    Route::get('/tracks/{track}/kanban', [TrackController::class, 'kanban'])->name('tracks.kanban');
     Route::resource('tracks', TrackController::class);
+    Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status');
     Route::resource('tasks', TaskController::class);
     Route::resource('tags', TagController::class);
     Route::resource('plannings', PlanningController::class);
@@ -64,5 +66,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // ==================== API МАРШРУТЫ ====================
 Route::get('/api/comment-tags', function () {
-    return App\Models\CommentTag::orderBy('title')->get(['id', 'title', 'color']);
+    return App\Models\CommentTag::withoutGlobalScope('team')->orderBy('title')->get(['id', 'title', 'color']);
 })->name('api.comment-tags');

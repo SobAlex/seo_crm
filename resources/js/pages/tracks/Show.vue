@@ -14,6 +14,14 @@
                                 Редактировать
                             </TextLink>
 
+                            <!-- <TextLink :href="kanban('tracks.kanban', track.id)" variant="create">
+                                Kanban-доска
+                            </TextLink> -->
+
+                            <TextLink :href="`/tracks/${track.id}/kanban`" variant="create">
+                                Kanban-доска
+                            </TextLink>
+
                             <Button variant="delete" :showIcon="true" size="lg" @click="destroyTrack">
                                 Удалить
                             </Button>
@@ -78,7 +86,7 @@
 import { router } from '@inertiajs/vue3'
 import TextLink from '@/components/TextLink.vue'
 import { Button } from '@/components/ui/button'
-import { index, edit } from '@/routes/tracks'
+import { index, edit, kanban } from '@/routes/tracks'
 import { destroy } from '@/actions/App/Http/Controllers/TrackController'
 
 const props = defineProps<{

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Website;
 use App\Models\Project;
 use App\Models\WebsiteType;
+use App\Services\TopvisorService;
+use App\Jobs\UpdateKeywordPositions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -41,6 +43,7 @@ class WebsiteController extends Controller
             'website_type_id' => 'required|exists:website_types,id',
             'cms' => 'nullable|string|max:100',
             'region' => 'nullable|string|max:100',
+            'topvisor_project_id' => 'nullable|string|max:255',
         ]);
 
         $website = Website::create($validated);
@@ -59,13 +62,55 @@ class WebsiteController extends Controller
     }
 
     public function edit(Website $website)
-    {
-        return Inertia::render('websites/Edit', [
-            'website' => $website,
-            'projects' => Project::orderBy('title')->get(['id', 'title']),
-            'websiteTypes' => WebsiteType::orderBy('title')->get(['id', 'title']),
-        ]);
+{
+    $topvisorProjects = [];
+    try {
+        $team = auth()->user()->team;
+        if ($team && $team->topvisor_user_id && $team->topvisor_api_key) {
+            $topvisorService = new TopvisorService($team->id);
+            $result = $topvisorService->getProjects();
+            if ($result && isset($result['projects']) && is_array($result['projects'])) {
+                foreach ($result['projects'] as $proj) {
+                    if (is_object($proj)) {
+                        $topvisorProjects[] = [
+                            'id' => $proj->id,
+                            'name' => $proj->name ?? 'Проект ' . $proj->id,
+                        ];
+                    } elseif (is_array($proj)) {
+                        $topvisorProjects[] = [
+                            'id' => $proj['id'],
+                            'name' => $proj['name'] ?? 'Проект ' . $proj['id'],
+                        ];
+                    }
+                }
+            } elseif ($result && is_array($result)) {
+                // Если результат — прямой массив объектов
+                foreach ($result as $proj) {
+                    if (is_object($proj)) {
+                        $topvisorProjects[] = [
+                            'id' => $proj->id,
+                            'name' => $proj->name ?? 'Проект ' . $proj->id,
+                        ];
+                    } elseif (is_array($proj)) {
+                        $topvisorProjects[] = [
+                            'id' => $proj['id'],
+                            'name' => $proj['name'] ?? 'Проект ' . $proj['id'],
+                        ];
+                    }
+                }
+            }
+        }
+    } catch (\Exception $e) {
+        \Log::error('Failed to fetch Topvisor projects: ' . $e->getMessage());
     }
+
+    return Inertia::render('websites/Edit', [
+        'website' => $website,
+        'projects' => Project::orderBy('title')->get(['id', 'title']),
+        'websiteTypes' => WebsiteType::orderBy('title')->get(['id', 'title']),
+        'topvisorProjects' => $topvisorProjects,
+    ]);
+}
 
     public function update(Request $request, Website $website)
     {
@@ -75,6 +120,7 @@ class WebsiteController extends Controller
             'website_type_id' => 'required|exists:website_types,id',
             'cms' => 'nullable|string|max:100',
             'region' => 'nullable|string|max:100',
+            'topvisor_project_id' => 'nullable|string|max:255',
         ]);
 
         $website->update($validated);
@@ -90,5 +136,21 @@ class WebsiteController extends Controller
 
         return redirect()->route('websites.index', ['project_id' => $projectId])
             ->with('success', 'Сайт удалён');
+    }
+
+    public function updatePositions(Request $request, Website $website)
+    {
+        $request->validate([
+            'search_engine' => 'nullable|in:google,yandex',
+            'region' => 'nullable|string|max:50',
+        ]);
+
+        UpdateKeywordPositions::dispatch(
+            $website->id,
+            $request->input('search_engine', 'google'),
+            $request->input('region', 'ru')
+        );
+
+        return back()->with('success', 'Обновление позиций запущено в фоне.');
     }
 }

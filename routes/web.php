@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TeamMemberController;
+use App\Http\Controllers\TeamTopvisorSettingsController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -74,6 +75,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         auth()->user()->unreadNotifications->markAsRead();
         return response()->json(['success' => true]);
     });
+
+    Route::prefix('settings')->group(function () {
+    Route::get('/topvisor', [TeamTopvisorSettingsController::class, 'edit'])->name('settings.topvisor.edit');
+    Route::put('/topvisor', [TeamTopvisorSettingsController::class, 'update'])->name('settings.topvisor.update');
+    });
+
+    Route::post('/websites/{website}/update-positions', [WebsiteController::class, 'updatePositions'])->name('websites.update-positions');
+
+    Route::get('/websites/{website}/keywords/import', [KeywordController::class, 'importForm'])->name('keywords.import.form');
+    Route::post('/websites/{website}/keywords/import', [KeywordController::class, 'import'])->name('keywords.import');
 });
 
 // ==================== API МАРШРУТЫ ====================

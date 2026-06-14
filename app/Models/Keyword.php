@@ -45,4 +45,9 @@ class Keyword extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    public function keywords()
+    {
+        return $this->hasMany(Keyword::class);
+    }
 }

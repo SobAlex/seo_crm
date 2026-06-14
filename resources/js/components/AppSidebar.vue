@@ -6,6 +6,7 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NotificationsDropdown from '@/components/NotificationsDropdown.vue';
 import NavUser from '@/components/NavUser.vue';
+import TextLink from '@/components/TextLink.vue'
 import { computed } from 'vue';
 
 import {
@@ -147,6 +148,8 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="filteredNavItems" />
+            <!-- <TextLink href="/settings/topvisor">Topvisor интеграция</TextLink> -->
+            <a href="/settings/topvisor" class="...">Topvisor интеграция</a>
         </SidebarContent>
 
         <SidebarFooter>

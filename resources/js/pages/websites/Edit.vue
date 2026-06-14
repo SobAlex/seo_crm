@@ -44,6 +44,21 @@
                             <Input id="region" v-model="form.region" />
                         </div>
 
+                        <!-- Topvisor проект -->
+                        <div>
+                            <Label for="topvisor_project_id">Проект в Topvisor</Label>
+                            <select id="topvisor_project_id" v-model="form.topvisor_project_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <option value="">Не выбран</option>
+                                <option v-for="proj in topvisorProjects" :key="proj.id" :value="proj.id">
+                                    {{ proj.name }} (ID: {{ proj.id }})
+                                </option>
+                            </select>
+                            <InputError :message="errors.topvisor_project_id" />
+                            <p class="text-gray-500 text-xs mt-1">
+                                Соответствие сайта проекту в Topvisor для автоматического сбора позиций.
+                            </p>
+                        </div>
+
                         <div class="flex justify-end space-x-2">
                             <TextLink :href="index({ project_id: website.project_id }).url" variant="escape" :showIcon="true">Отмена</TextLink>
                             <Button type="submit" variant="update" size="lg" :showIcon="true" :disabled="processing">
@@ -72,6 +87,7 @@ const props = defineProps<{
     website: any
     projects: any[]
     websiteTypes: any[]
+    topvisorProjects: any[]
 }>()
 
 const form = reactive({
@@ -80,6 +96,7 @@ const form = reactive({
     website_type_id: props.website.website_type_id,
     cms: props.website.cms,
     region: props.website.region,
+    topvisor_project_id: props.website.topvisor_project_id || '',
 })
 
 const errors = ref({})

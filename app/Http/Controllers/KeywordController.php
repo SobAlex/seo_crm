@@ -90,4 +90,34 @@ class KeywordController extends Controller
         return redirect()->route('keywords.index', ['website_id' => $websiteId])
             ->with('success', 'Ключевое слово удалено');
     }
+
+    public function import(Request $request, Website $website)
+    {
+        $request->validate([
+            'keywords' => 'required|string',
+        ]);
+
+        // Разбиваем по строкам, удаляем пустые и лишние пробелы
+        $lines = explode("\n", $request->keywords);
+        $keywords = array_filter(array_map('trim', $lines), fn($kw) => !empty($kw));
+
+        // Удаляем старые ключи сайта
+        $website->keywords()->delete();
+
+        // Создаём новые
+        $created = 0;
+        foreach ($keywords as $kw) {
+            $website->keywords()->create(['keyword' => $kw]);
+            $created++;
+        }
+
+        return redirect()->back()->with('success', "Импортировано {$created} ключевых слов.");
+    }
+
+    public function importForm(Website $website)
+    {
+        return Inertia::render('keywords/Import', [
+            'website' => $website,
+        ]);
+    }
 }

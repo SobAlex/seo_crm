@@ -12,7 +12,7 @@ class Website extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'url', 'project_id', 'website_type_id', 'cms', 'region', 'team_id'
+        'url', 'project_id', 'website_type_id', 'cms', 'region', 'team_id', 'topvisor_project_id'
     ];
 
     public function project()

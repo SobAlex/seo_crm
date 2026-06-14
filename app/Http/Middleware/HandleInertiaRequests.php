@@ -39,13 +39,8 @@ class HandleInertiaRequests extends Middleware
         $userData = null;
 
         if ($user) {
-            // Берем все обычные поля пользователя
             $userData = $user->toArray();
-
-            // Добавляем количество непрочитанных уведомлений
             $userData['unread_notifications_count'] = $user->unreadNotifications()->count();
-
-            // Добавляем последние 5 уведомлений (для выпадающего списка)
             $userData['notifications'] = $user->notifications()->latest()->take(5)->get();
         }
 
@@ -56,6 +51,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $userData,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
         ];
     }
 }

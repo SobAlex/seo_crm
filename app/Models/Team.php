@@ -10,7 +10,11 @@ class Team extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'plan', 'trial_ends_at'
+    'name', 'plan', 'trial_ends_at', 'topvisor_user_id', 'topvisor_api_key'
+    ];
+
+    protected $encrypted = [
+        'topvisor_api_key',
     ];
 
     protected $casts = [

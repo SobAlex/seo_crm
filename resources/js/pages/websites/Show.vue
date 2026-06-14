@@ -17,6 +17,10 @@
                             <Button variant="delete" :showIcon="true" size="lg" @click="destroyWebsite">
                                 Удалить
                             </Button>
+
+                            <TextLink :href="`/websites/${website.id}/keywords/import`" variant="create">
+                                Импортировать ключи
+                            </TextLink>
                         </div>
                     </div>
 

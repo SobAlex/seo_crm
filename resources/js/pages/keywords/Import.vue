@@ -16,13 +16,22 @@
                             <textarea
                                 v-model="form.keywords"
                                 rows="10"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                                placeholder="ключевое слово 1&#10;ключевое слово 2"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                placeholder="ключевое слово 1&#10;ключевое слово 2&#10;ключевое слово 3"
                             ></textarea>
                         </div>
                         <div class="mt-6 flex justify-end space-x-2">
-                            <Link :href="`/websites/${website.id}`" class="btn btn-secondary">Отмена</Link>
-                            <button type="submit" class="btn btn-primary" :disabled="processing">
+                            <Link
+                                :href="`/keywords/websites/${website.id}`"
+                                class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-300"
+                            >
+                                Отмена
+                            </Link>
+                            <button
+                                type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700"
+                                :disabled="processing"
+                            >
                                 {{ processing ? 'Импорт...' : 'Импортировать' }}
                             </button>
                         </div>
@@ -46,14 +55,13 @@ const processing = ref(false);
 
 const submit = () => {
     processing.value = true;
-    router.post(`/websites/${props.website.id}/keywords/import`, form.value, {
+    router.post(`/keywords/websites/${props.website.id}/import`, form.value, {
         preserveState: true,
         onFinish: () => {
             processing.value = false;
-            form.value.keywords = '';
         },
         onSuccess: () => {
-            router.visit(`/websites/${props.website.id}/keywords`); // или куда нужно
+            form.value.keywords = '';
         },
     });
 };

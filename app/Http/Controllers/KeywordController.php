@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Keyword;
 use App\Models\Website;
+use App\Jobs\UpdateKeywordPositions;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,15 +12,13 @@ class KeywordController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Keyword::with('website');
-
-        if ($request->website_id) {
-            $query->where('website_id', $request->website_id);
-        }
+        $websites = Website::whereHas('keywords')
+            ->withCount('keywords')
+            ->latest('id')
+            ->paginate(20);
 
         return Inertia::render('keywords/Index', [
-            'keywords' => $query->latest()->paginate(10),
-            'websiteId' => $request->website_id,
+            'websites' => $websites,
         ]);
     }
 
@@ -42,9 +41,9 @@ class KeywordController extends Controller
             'target_position' => 'nullable|integer|min:0',
         ]);
 
-        $keyword = Keyword::create($validated);
+        Keyword::create($validated);
 
-        return redirect()->route('keywords.index', ['website_id' => $keyword->website_id])
+        return redirect()->route('keywords.index', ['website_id' => $validated['website_id']])
             ->with('success', 'Ключевое слово добавлено');
     }
 
@@ -91,13 +90,13 @@ class KeywordController extends Controller
             ->with('success', 'Ключевое слово удалено');
     }
 
+    // Импорт с полной заменой списка (из целевой ветки)
     public function import(Request $request, Website $website)
     {
         $request->validate([
             'keywords' => 'required|string',
         ]);
 
-        // Разбиваем по строкам, удаляем пустые и лишние пробелы
         $lines = explode("\n", $request->keywords);
         $keywords = array_filter(array_map('trim', $lines), fn($kw) => !empty($kw));
 
@@ -119,5 +118,39 @@ class KeywordController extends Controller
         return Inertia::render('keywords/Import', [
             'website' => $website,
         ]);
+    }
+
+    // Запуск обновления позиций (из рабочей ветки)
+    public function updatePositions(Request $request, Website $website)
+    {
+        $validated = $request->validate([
+            'search_engine' => 'required|in:google,yandex',
+            'region' => 'required|string|max:50',
+        ]);
+
+        // UpdateKeywordPositions::dispatch(
+        //     $website->id,
+        //     $validated['search_engine'],
+        //     $validated['region']
+        // );
+
+        UpdateKeywordPositions::dispatchSync($website->id, $validated['search_engine'], $validated['region']);
+
+        return back()->with('success', 'Обновление позиций запущено в фоне. Результаты появятся через несколько минут.');
+    }
+
+    public function showForWebsite(Website $website)
+    {
+        $keywords = $website->keywords()->with('latestPosition')->latest()->paginate(30);
+        return Inertia::render('keywords/WebsiteKeywords', [
+            'website' => $website,
+            'keywords' => $keywords,
+        ]);
+    }
+
+    public function destroyAll(Website $website)
+    {
+        $website->keywords()->delete();
+        return back()->with('success', 'Все ключевые слова удалены.');
     }
 }

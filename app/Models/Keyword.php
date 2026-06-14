@@ -26,6 +26,21 @@ class Keyword extends Model
         return $this->belongsTo(Website::class);
     }
 
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    public function positions()
+    {
+        return $this->hasMany(KeywordPosition::class);
+    }
+
+    public function latestPosition()
+    {
+        return $this->hasOne(KeywordPosition::class)->latestOfMany('checked_at');
+    }
+
     protected static function booted()
     {
         static::addGlobalScope('team', function (Builder $builder) {
@@ -39,15 +54,5 @@ class Keyword extends Model
                 $model->team_id = auth()->user()->team_id;
             }
         });
-    }
-
-    public function team()
-    {
-        return $this->belongsTo(Team::class);
-    }
-
-    public function keywords()
-    {
-        return $this->hasMany(Keyword::class);
     }
 }

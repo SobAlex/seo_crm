@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/admin/team/contractors/{contractor}', [TeamMemberController::class, 'destroyContractor'])->name('admin.team.contractors.destroy');
     Route::put('/admin/team/users/{user}/role', [TeamMemberController::class, 'updateRole'])->name('admin.team.users.role');
 
+    // Уведомления
     Route::get('/notifications', function () {
         return auth()->user()->notifications()->latest()->take(10)->get();
     })->name('notifications.index');
@@ -76,15 +77,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['success' => true]);
     });
 
+    // Настройки Topvisor
     Route::prefix('settings')->group(function () {
-    Route::get('/topvisor', [TeamTopvisorSettingsController::class, 'edit'])->name('settings.topvisor.edit');
-    Route::put('/topvisor', [TeamTopvisorSettingsController::class, 'update'])->name('settings.topvisor.update');
+        Route::get('/topvisor', [TeamTopvisorSettingsController::class, 'edit'])->name('settings.topvisor.edit');
+        Route::put('/topvisor', [TeamTopvisorSettingsController::class, 'update'])->name('settings.topvisor.update');
     });
 
+    // Дополнительные маршруты для работы с ключевыми словами
+    Route::get('/keywords', [KeywordController::class, 'index'])->name('keywords.index');
+    Route::get('/keywords/websites/{website}', [KeywordController::class, 'showForWebsite'])->name('keywords.website.show');
+    Route::get('/keywords/websites/{website}/import', [KeywordController::class, 'importForm'])->name('keywords.import.form');
+    Route::post('/keywords/websites/{website}/import', [KeywordController::class, 'import'])->name('keywords.import');
+    Route::post('/keywords/websites/{website}/update-positions', [KeywordController::class, 'updatePositions'])->name('keywords.update-positions');
+    Route::delete('/keywords/websites/{website}/keywords', [KeywordController::class, 'destroyAll'])->name('keywords.destroy-all');
+
+    // Альтернативный маршрут для обновления позиций через WebsiteController (если нужен)
     Route::post('/websites/{website}/update-positions', [WebsiteController::class, 'updatePositions'])->name('websites.update-positions');
 
-    Route::get('/websites/{website}/keywords/import', [KeywordController::class, 'importForm'])->name('keywords.import.form');
-    Route::post('/websites/{website}/keywords/import', [KeywordController::class, 'import'])->name('keywords.import');
+    // Старые маршруты импорта (через /websites/{website}/keywords/import) – они уже перекрыты выше, но оставлены для совместимости
+    Route::get('/websites/{website}/keywords/import', [KeywordController::class, 'importForm'])->name('keywords.import.form.alt');
+    Route::post('/websites/{website}/keywords/import', [KeywordController::class, 'import'])->name('keywords.import.alt');
 });
 
 // ==================== API МАРШРУТЫ ====================

@@ -114,16 +114,19 @@ class WebsiteController extends Controller
 
     public function update(Request $request, Website $website)
     {
+        \Log::info('Update website data', $request->all());
         $validated = $request->validate([
             'url' => 'required|url|max:255',
             'project_id' => 'required|exists:projects,id',
             'website_type_id' => 'required|exists:website_types,id',
             'cms' => 'nullable|string|max:100',
             'region' => 'nullable|string|max:100',
-            'topvisor_project_id' => 'nullable|string|max:255',
+            'topvisor_project_id' => 'nullable|string|max:255', // обязательно
         ]);
 
         $website->update($validated);
+        $website->topvisor_project_id = $request->topvisor_project_id;
+        $website->save();
 
         return redirect()->route('websites.index', ['project_id' => $website->project_id])
             ->with('success', 'Сайт обновлён');
